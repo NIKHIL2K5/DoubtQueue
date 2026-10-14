@@ -1,3 +1,5 @@
+
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -5,6 +7,8 @@ import 'package:http/http.dart' as http;
 import '../config.dart';
 import '../models/doubt.dart';
 import '../models/session.dart';
+
+const apiRequestTimeout = Duration(seconds: 15);
 
 class ApiException implements Exception {
   const ApiException(this.message);
@@ -16,10 +20,15 @@ class ApiException implements Exception {
 }
 
 class ApiService {
-  ApiService(this._client, {this.baseUrl = apiBaseUrl});
+  ApiService(
+    this._client, {
+    this.baseUrl = apiBaseUrl,
+    this.timeout = apiRequestTimeout,
+  });
 
   final http.Client _client;
   final String baseUrl;
+  final Duration timeout;
 
   Future<List<Session>> getSessions({String? status}) async {
     final query = status == null ? '' : '?status=$status';
@@ -106,7 +115,14 @@ class ApiService {
 
     final http.Response response;
     try {
-      response = await http.Response.fromStream(await _client.send(request));
+      response = await _client
+          .send(request)
+          .then(http.Response.fromStream)
+          .timeout(timeout);
+    } on TimeoutException {
+      throw const ApiException(
+        'The server took too long to answer. Try again.',
+      );
     } on http.ClientException {
       throw const ApiException(
         'Could not reach the server. Check that the backend is running.',

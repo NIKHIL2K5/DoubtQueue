@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:doubtqueue/services/api_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -59,6 +60,30 @@ void main() {
     final api = ApiService(client, baseUrl: baseUrl);
 
     expect(await api.getSessions(), isEmpty);
+  });
+
+    test('a request timeout throws a friendly ApiException', () async {
+    final completer = Completer<http.Response>();
+
+    final client = MockClient((request) => completer.future);
+    final api = ApiService(
+      client,
+      baseUrl: baseUrl,
+      timeout: const Duration(milliseconds: 10),
+    );
+
+    await expectLater(
+      api.getSessions(),
+      throwsA(
+        isA<ApiException>().having(
+          (error) => error.message,
+          'message',
+          'The server took too long to answer. Try again.',
+        ),
+      ),
+    );
+
+    client.close();
   });
 
   test('a 409 response throws an exception with the API message', () async {

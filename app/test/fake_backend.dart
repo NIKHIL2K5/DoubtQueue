@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:doubtqueue/services/api_service.dart';
 import 'package:http/http.dart' as http;
@@ -12,6 +13,7 @@ class FakeBackend {
   final List<Map<String, dynamic>> sessions;
   final List<Map<String, dynamic>> doubts = [];
   bool failRequests = false;
+  bool timeoutRequests = false;
 
   static Map<String, dynamic> openSession(
     int id,
@@ -79,6 +81,10 @@ class FakeBackend {
   }
 
   Future<http.Response> _handle(http.Request request) async {
+    if (timeoutRequests) {
+      return Completer<http.Response>().future;
+    }
+
     if (failRequests) {
       return _json({'status': 500, 'message': 'Something went wrong'}, 500);
     }

@@ -1,6 +1,7 @@
 import 'package:doubtqueue/screens/session_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:doubtqueue/services/api_service.dart';
 
 import 'fake_backend.dart';
 
@@ -42,6 +43,45 @@ double topOf(WidgetTester tester, String text) {
 }
 
 void main() {
+
+  testWidgets('shows a retryable error when loading sessions times out', (
+    tester,
+  ) async {
+    final backend = backendWithSessions()..timeoutRequests = true;
+
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    final api = ApiService(
+      backend.client,
+      baseUrl: 'http://test.local',
+      timeout: const Duration(milliseconds: 10),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(home: SessionListScreen(api: api)),
+    );
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 20));
+    await tester.pump();
+
+    expect(find.text('Could not load this page'), findsOneWidget);
+    expect(
+      find.text('The server took too long to answer. Try again.'),
+      findsOneWidget,
+    );
+    expect(find.text('Try again'), findsOneWidget);
+
+    backend.timeoutRequests = false;
+    await tester.tap(find.text('Try again'));
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(find.text('PHP Basics Doubt Session'), findsOneWidget);
+  });
+
   testWidgets('shows a card for each open session by default', (tester) async {
     await pumpList(tester, backendWithSessions());
 
