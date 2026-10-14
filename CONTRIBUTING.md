@@ -17,6 +17,8 @@ Thank you for helping with DoubtQueue. Please follow these steps.
    ```
 
 4. Comment on the GitHub issue you want to work on before you start, so nobody else works on the same thing.
+   When opening an issue, use the Bug report template to report a problem or the Feature request template to propose an improvement. Include the requested details so maintainers can understand and investigate the issue effectively.
+
 5. Make your change. Keep it small and focused on the issue.
 6. Add or update tests for the behavior you changed.
 7. Run the tests:
