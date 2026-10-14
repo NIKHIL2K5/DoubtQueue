@@ -37,6 +37,10 @@ Thank you for helping with DoubtQueue. Please follow these steps.
    Fixes #12
    ```
 
+## Project Architecture
+
+New contributors can read the [Architecture Overview](docs/architecture.md) to understand the project structure, request flow, database, and tests before making changes.
+
 ## Code style
 
 - PHP follows PSR-12 and uses `declare(strict_types=1);`.

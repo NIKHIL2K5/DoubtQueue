@@ -123,6 +123,10 @@ MySQL support is optional and has not been tested locally. The tests use SQLite 
 - **"could not find driver":** enable `extension=pdo_sqlite` in `php.ini`.
 - **Sample data is wrong:** stop the backend and delete `backend/data/doubtqueue.sqlite`. It is created again on the next start.
 
+## Documentation
+
+See the [Architecture Overview](docs/architecture.md) to understand how the backend, Flutter app, database, and tests fit together.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
