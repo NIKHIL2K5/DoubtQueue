@@ -80,7 +80,7 @@ flutter test
 | GET | `/api/sessions/{id}` | Get one session |
 | PATCH | `/api/sessions/{id}/close` | Close a session |
 | POST | `/api/sessions/{id}/doubts` | Join a session (`student_name`, `student_email`, `topic`, `question`) |
-| GET | `/api/sessions/{id}/queue` | Waiting doubts, oldest first |
+| GET | `/api/sessions/{id}/queue` | Waiting doubts, oldest first; optional `limit` (1–100) and `offset` (0 or more) query parameters |
 | POST | `/api/sessions/{id}/next` | Take the oldest waiting doubt |
 | GET | `/api/sessions/{id}/stats` | Doubt counts by status |
 | GET | `/api/doubts/{id}` | Get one doubt, with `position` while it is waiting |

@@ -94,4 +94,48 @@ class DoubtRepositoryTest extends TestCase
             $createdAt
         );
     }
+
+    public function testFindWaitingRespectsLimit(): void
+    {
+        $first = $this->save('First', '2026-01-01 10:01:00');
+        $second = $this->save('Second', '2026-01-01 10:02:00');
+        $third = $this->save('Third', '2026-01-01 10:03:00');
+
+        $waiting = $this->doubts->findWaiting($this->sessionId, 2);
+
+        $this->assertCount(2, $waiting);
+        $this->assertSame(
+        [$first['id'], $second['id']],
+        array_column($waiting, 'id')
+        );
+    }
+
+    public function testFindWaitingRespectsOffset(): void
+    {
+        $first = $this->save('First', '2026-01-01 10:01:00');
+        $second = $this->save('Second', '2026-01-01 10:02:00');
+        $third = $this->save('Third', '2026-01-01 10:03:00');
+
+        $waiting = $this->doubts->findWaiting($this->sessionId, 2, 1);
+
+        $this->assertSame(
+        [$second['id'], $third['id']],
+        array_column($waiting, 'id')
+        );
+    }
+
+    public function testFindWaitingWithoutPaginationReturnsAllWaitingDoubts(): void
+    {
+        $first = $this->save('First', '2026-01-01 10:01:00');
+        $second = $this->save('Second', '2026-01-01 10:02:00');
+        $third = $this->save('Third', '2026-01-01 10:03:00');
+
+        $waiting = $this->doubts->findWaiting($this->sessionId);
+
+        $this->assertSame(
+            [$first['id'], $second['id'], $third['id']],
+            array_column($waiting, 'id')
+        );
+    }
+
 }

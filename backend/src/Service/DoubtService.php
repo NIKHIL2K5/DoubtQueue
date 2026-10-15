@@ -14,9 +14,7 @@ use DoubtQueue\Repository\SessionRepository;
 
 class DoubtService
 {
-    public function __construct(private DoubtRepository $doubts, private SessionRepository $sessions)
-    {
-    }
+    public function __construct(private DoubtRepository $doubts, private SessionRepository $sessions) {}
 
     public function join(int $sessionId, array $data): array
     {
@@ -49,11 +47,32 @@ class DoubtService
         return $this->withPosition($this->findDoubt($id));
     }
 
-    public function queue(int $sessionId): array
-    {
+    public function queue(
+        int $sessionId,
+        mixed $limit = null,
+        mixed $offset = null
+    ): array {
         $this->findSession($sessionId);
 
-        return $this->doubts->findWaiting($sessionId);
+        $validatedLimit = $this->validatePaginationValue(
+            $limit,
+            'limit',
+            1,
+            100
+        );
+
+        $validatedOffset = $this->validatePaginationValue(
+            $offset,
+            'offset',
+            0,
+            PHP_INT_MAX
+        );
+
+        return $this->doubts->findWaiting(
+            $sessionId,
+            $validatedLimit,
+            $validatedOffset ?? 0
+        );
     }
 
     public function next(int $sessionId): array
@@ -150,5 +169,39 @@ class DoubtService
         }
 
         return $value;
+    }
+
+    private function validatePaginationValue(
+        mixed $value,
+        string $name,
+        int $minimum,
+        int $maximum
+    ): ?int {
+        if ($value === null) {
+            return null;
+        }
+
+        if (
+            !is_string($value)
+            || preg_match('/^-?\d+$/D', $value) !== 1
+        ) {
+            throw new ValidationException(
+                "$name must be a whole number"
+            );
+        }
+
+        $validated = filter_var($value, FILTER_VALIDATE_INT);
+
+        if (
+            $validated === false
+            || $validated < $minimum
+            || $validated > $maximum
+        ) {
+            throw new ValidationException(
+                "$name must be between $minimum and $maximum"
+            );
+        }
+
+        return $validated;
     }
 }

@@ -21,7 +21,14 @@ class DoubtController
 
     public function queue(Request $request, array $params): Response
     {
-        return new Response(200, $this->doubts->queue($params['id']));
+        return new Response(
+            200,
+            $this->doubts->queue(
+                $params['id'],
+                $request->query['limit'] ?? null,
+                $request->query['offset'] ?? null
+            )
+        );
     }
 
     public function next(Request $request, array $params): Response

@@ -127,4 +127,67 @@ class DoubtServiceTest extends TestCase
             'question' => 'How do I loop over an array?',
         ];
     }
+
+
+    public function testQueueWithInvalidLimitThrows(): void
+    {
+        $session = $this->sessions->create([
+                'title' => 'PHP',
+                'mentor_name' => 'Priya',
+        ]);
+
+        foreach (['0', '-1', 'abc', '101', '1.5'] as $limit) {
+            try {
+                $this->doubts->queue($session['id'], $limit);
+                $this->fail("Expected ValidationException for limit $limit");
+            } catch (ValidationException) {
+                $this->assertTrue(true);
+            }
+        }
+    }
+
+    public function testQueueWithInvalidOffsetThrows(): void
+    {
+        $session = $this->sessions->create([
+            'title' => 'PHP',
+            'mentor_name' => 'Priya',
+        ]);
+
+        foreach (['-1', 'abc', '1.5'] as $offset) {
+            try {
+                $this->doubts->queue($session['id'], null, $offset);
+                $this->fail("Expected ValidationException for offset $offset");
+            } catch (ValidationException) {
+                $this->assertTrue(true);
+            }
+        }
+    }
+
+    public function testQueueWithOffsetOnlyReturnsRemainingDoubts(): void
+    {
+        $session = $this->sessions->create([
+        'title' => 'PHP',
+        'mentor_name' => 'Priya',
+    ]);
+
+        $first = $this->doubts->join($session['id'], $this->validData());
+        $second = $this->doubts->join(
+            $session['id'],
+            ['student_name' => 'Ben'] + $this->validData()
+        );
+
+        $queue = $this->doubts->queue($session['id'], null, '1');
+
+        $this->assertSame(
+            [$second['id']],
+            array_column($queue, 'id')
+        );
+    }
+
+    public function testQueueForUnknownSessionThrowsNotFound(): void
+    {
+    $this->expectException(NotFoundException::class);
+
+    $this->doubts->queue(999999);
+    }
 }

@@ -37,12 +37,28 @@ class DoubtRepository
         return $row === false ? null : $this->format($row);
     }
 
-    public function findWaiting(int $sessionId): array
-    {
-        $stmt = $this->pdo->prepare(
-            "SELECT * FROM doubts WHERE session_id = ? AND status = 'WAITING' ORDER BY created_at ASC, id ASC"
-        );
-        $stmt->execute([$sessionId]);
+    public function findWaiting(
+        int $sessionId,
+        ?int $limit = null,
+        int $offset = 0
+    ): array {
+        $sql = "SELECT * FROM doubts
+            WHERE session_id = ? AND status = 'WAITING'
+            ORDER BY created_at ASC, id ASC";
+
+        $params = [$sessionId];
+
+        if ($limit !== null) {
+            $sql .= ' LIMIT ? OFFSET ?';
+            $params[] = $limit;
+            $params[] = $offset;
+        } elseif ($offset > 0) {
+            $sql .= ' LIMIT -1 OFFSET ?';
+            $params[] = $offset;
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
 
         return array_map([$this, 'format'], $stmt->fetchAll());
     }
